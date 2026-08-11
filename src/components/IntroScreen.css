@@ -1,0 +1,221 @@
+.intro-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 50;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.intro-container.shatter {
+  opacity: 0;
+  transform: scale(1.5);
+  pointer-events: none;
+}
+
+.fullscreen-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+
+.ai-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #00FF41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 24px;
+  text-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
+}
+
+.ai-loading.error {
+  color: #FF0041;
+  text-shadow: 0 0 10px rgba(255, 0, 65, 0.8);
+}
+
+.title-overlay {
+  position: absolute;
+  top: 15%;
+  width: 100%;
+  text-align: center;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.matrix-title {
+  color: #00FF41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 42px;
+  margin: 0 0 10px 0;
+  text-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+}
+
+.matrix-subtitle {
+  color: #88ffaa;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 20px;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.pills-layout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.pill-wrapper {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+  pointer-events: auto; /* Allow CSS hover */
+}
+
+.left-pill {
+  left: 20%;
+}
+
+.right-pill {
+  right: 20%;
+}
+
+.pill-wrapper:hover {
+  transform: translateY(-50%) scale(1.15); /* Feedback if mouse is used */
+}
+
+.pill {
+  width: 60px;
+  height: 150px;
+  border-radius: 30px;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 
+    15px 15px 30px rgba(0,0,0,0.9),
+    inset -8px -8px 20px rgba(0,0,0,0.8),
+    inset 8px 8px 20px rgba(255,255,255,0.4);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Gelatin capsule center seam */
+.pill::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(0,0,0,0.15);
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  border-top: 1px solid rgba(0,0,0,0.4);
+}
+
+/* Strong specular highlight for glossy surface */
+.pill::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 15%;
+  width: 12px;
+  height: 80%;
+  border-radius: 6px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0));
+  filter: blur(1px);
+}
+
+.blue-pill {
+  background: radial-gradient(ellipse at 30% 30%, #3399ff 0%, #0044cc 50%, #001144 100%);
+}
+
+.blue-pill:hover, .pill-wrapper:hover .blue-pill {
+  box-shadow: 
+    0 0 50px rgba(0, 136, 255, 0.8),
+    inset -8px -8px 20px rgba(0,0,0,0.8),
+    inset 8px 8px 20px rgba(255,255,255,0.6);
+}
+
+.red-pill {
+  background: radial-gradient(ellipse at 30% 30%, #ff5533 0%, #bb0000 50%, #330000 100%);
+}
+
+.red-pill:hover, .pill-wrapper:hover .red-pill {
+  box-shadow: 
+    0 0 50px rgba(255, 34, 0, 0.8),
+    inset -8px -8px 20px rgba(0,0,0,0.8),
+    inset 8px 8px 20px rgba(255,255,255,0.6);
+}
+
+.pill-label {
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+.pinch-hint {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  opacity: 0.8;
+  z-index: 10;
+}
+
+.pinch-hint-text {
+  color: #00FF41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  margin-bottom: 15px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+}
+
+.pinch-emoji-animation {
+  font-size: 54px;
+  position: relative;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  filter: sepia(1) hue-rotate(80deg) saturate(3) brightness(0.8) drop-shadow(0 0 10px #00FF41);
+}
+
+.pinch-emoji-animation span {
+  position: absolute;
+  animation: swapEmoji 2s infinite;
+}
+
+.emoji-frame-1 {
+  animation-delay: 0s;
+}
+
+.emoji-frame-2 {
+  animation-delay: -1s;
+}
+
+@keyframes swapEmoji {
+  0%, 49.9% { opacity: 1; transform: scale(1); }
+  50%, 100% { opacity: 0; transform: scale(0.9); }
+}

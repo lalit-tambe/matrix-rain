@@ -158,13 +158,15 @@ export class RainEngine {
         const isHead = i === 0;
         const isNearHead = i > 0 && i < 4;
         const alpha = Math.max(0, 1 - (i / stream.length));
+        // Use an easing curve so the trail stays brighter for longer before fading out
+        const easeAlpha = Math.pow(alpha, 0.5);
 
         if (isHead) {
-          this.ctx.fillStyle = '#FFFFFF'; // Pure white core
+          this.ctx.fillStyle = '#FFFFFF';
         } else if (isNearHead) {
-          this.ctx.fillStyle = '#A0FFA0'; // Bright inner corona
+          this.ctx.fillStyle = '#00FF88'; // Rich neon green instead of washed-out pastel
         } else {
-          this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+          this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${easeAlpha})`;
         }
 
         // Safety check, though chars is fully initialized in createStream

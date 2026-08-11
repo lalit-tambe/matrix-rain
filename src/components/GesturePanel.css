@@ -3,7 +3,7 @@
   bottom: 30px;
   right: 30px;
   width: 260px;
-  height: 230px;
+  height: auto;
   background: rgba(0, 10, 0, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -89,9 +89,65 @@
 
 .gesture-label.error {
   color: #FF0041;
-  text-shadow: 0 0 5px rgba(255, 0, 65, 0.8);
-  border-top-color: rgba(255, 0, 65, 0.4);
-  animation: pulseError 1s infinite;
+  border-color: #FF0041;
+  box-shadow: 0 0 10px rgba(255, 0, 65, 0.4);
+}
+
+.minimize-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 1px solid #00FF41;
+  color: #00FF41;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.minimize-btn:hover {
+  background-color: rgba(0, 255, 65, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+  transform: scale(1.1);
+}
+
+.gesture-panel-wrapper.minimized {
+  padding: 10px 15px;
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: 15px;
+  border-radius: 8px;
+}
+
+.gesture-panel-wrapper.minimized .minimize-btn {
+  position: static;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  margin: 0;
+}
+
+.restore-text {
+  color: #00FF41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  cursor: pointer;
 }
 
 @keyframes pulseText {
@@ -104,4 +160,36 @@
   0% { opacity: 1; }
   50% { opacity: 0.5; }
   100% { opacity: 1; }
+}
+
+.gesture-legend {
+  background: rgba(0, 10, 0, 0.8);
+  border-top: 1px solid rgba(0, 255, 65, 0.4);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-title {
+  color: rgba(0, 255, 65, 0.6);
+  font-size: 11px;
+  font-family: 'Courier New', Courier, monospace;
+  margin-bottom: 2px;
+  border-bottom: 1px dashed rgba(0, 255, 65, 0.3);
+  padding-bottom: 4px;
+}
+
+.legend-item {
+  color: #00FF41;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legend-icon {
+  font-size: 16px;
+  filter: sepia(1) hue-rotate(80deg) saturate(3) brightness(0.8);
 }

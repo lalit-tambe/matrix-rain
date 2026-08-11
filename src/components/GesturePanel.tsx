@@ -1,23 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
-import { initializeHandTracker } from '../lib/gestures/handTracker';
-import { HandLandmarker, type HandLandmarkerResult } from '@mediapipe/tasks-vision';
+import { HandLandmarker } from '@mediapipe/tasks-vision';
 import { GestureClassifier } from '../lib/gestures/classifier';
 import { GestureSmoother } from '../lib/gestures/gestureSmoothing';
 import { rainStore } from '../state/rainStore';
 import type { GestureType } from '../types';
+import type { Landmark } from '../lib/gestures/classifier';
 import './GesturePanel.css';
 
-export const GesturePanel = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+type GesturePanelProps = {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  landmarksRef: React.MutableRefObject<Landmark[]>;
+};
+
+export const GesturePanel = ({ videoRef, landmarksRef }: GesturePanelProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isReady, setIsReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [activeGesture, setActiveGesture] = useState<GestureType>('NONE');
+  const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
     let animationFrameId: number;
-    let lastVideoTime = -1;
-    let isActive = true;
     let lastAppliedGesture: GestureType = 'NONE';
     
     const classifier = new GestureClassifier();
@@ -42,59 +43,7 @@ export const GesturePanel = () => {
       setActiveGesture(gesture);
     };
 
-    const setup = async () => {
-      try {
-        const landmarker = await initializeHandTracker();
-        if (!isActive) return;
-
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240 } // Keep resolution small for perf
-        });
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-          
-          videoRef.current.onloadeddata = () => {
-             if (!isActive) return;
-             setIsReady(true);
-             detectLoop(landmarker);
-          };
-        }
-      } catch (err) {
-        console.error("Failed to initialize webcam or tracker:", err);
-        if (isActive) setError("Camera access denied.");
-      }
-    };
-
-    let lastDetectTime = 0;
-
-    const detectLoop = (landmarker: HandLandmarker) => {
-      if (!isActive || !videoRef.current || !canvasRef.current) return;
-      const video = videoRef.current;
-      
-      const startTimeMs = performance.now();
-      
-      // Throttle AI detection to ~15 times a second (66ms) to prevent main thread blocking while keeping response fast
-      if (startTimeMs - lastDetectTime > 66) {
-        lastDetectTime = startTimeMs;
-        const results = landmarker.detectForVideo(video, startTimeMs);
-        drawResults(results);
-
-        if (results.landmarks && results.landmarks.length > 0) {
-          const rawGesture = classifier.classify(results.landmarks[0]);
-          const stableGesture = smoother.smooth(rawGesture);
-          applyGestureToRain(stableGesture);
-        } else {
-          const stableGesture = smoother.smooth('NONE');
-          applyGestureToRain(stableGesture);
-        }
-      }
-      
-      animationFrameId = requestAnimationFrame(() => detectLoop(landmarker));
-    };
-
-    const drawResults = (results: HandLandmarkerResult) => {
+    const drawResults = () => {
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext('2d');
       if (!canvas || !ctx || !videoRef.current) return;
@@ -107,13 +56,25 @@ export const GesturePanel = () => {
       
       ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
       
-      if (results.landmarks && results.landmarks.length > 0) {
-        for (const landmarks of results.landmarks) {
-           drawConnectors(ctx, landmarks, HandLandmarker.HAND_CONNECTIONS, { color: "#00FF41", lineWidth: 3 });
-           drawLandmarks(ctx, landmarks, { color: "#FFFFFF", lineWidth: 1, radius: 4 });
-        }
+      const landmarks = landmarksRef.current;
+
+      if (landmarks && landmarks.length > 0) {
+        // Run classifier
+        const rawGesture = classifier.classify(landmarks);
+        const stableGesture = smoother.smooth(rawGesture);
+        applyGestureToRain(stableGesture);
+
+        // Draw HUD
+        drawConnectors(ctx, landmarks, HandLandmarker.HAND_CONNECTIONS, { color: "#00FF41", lineWidth: 3 });
+        drawLandmarks(ctx, landmarks, { color: "#FFFFFF", lineWidth: 1, radius: 4 });
+      } else {
+        const stableGesture = smoother.smooth('NONE');
+        applyGestureToRain(stableGesture);
       }
+      
       ctx.restore();
+
+      animationFrameId = requestAnimationFrame(drawResults);
     };
 
     const drawConnectors = (ctx: CanvasRenderingContext2D, landmarks: any[], connections: any[], style: any) => {
@@ -121,11 +82,8 @@ export const GesturePanel = () => {
       ctx.lineWidth = style.lineWidth;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      
-      // Add a cool neon glow to the skeleton
       ctx.shadowColor = '#00FF41';
       ctx.shadowBlur = 8;
-
       for (const connection of connections) {
         const start = landmarks[connection.start];
         const end = landmarks[connection.end];
@@ -138,8 +96,7 @@ export const GesturePanel = () => {
 
     const drawLandmarks = (ctx: CanvasRenderingContext2D, landmarks: any[], style: any) => {
       ctx.fillStyle = style.color;
-      ctx.shadowBlur = 0; // Remove blur for the points themselves
-      
+      ctx.shadowBlur = 0; 
       for (const landmark of landmarks) {
         ctx.beginPath();
         ctx.arc(landmark.x * canvasRef.current!.width, landmark.y * canvasRef.current!.height, style.radius, 0, 2 * Math.PI);
@@ -147,35 +104,34 @@ export const GesturePanel = () => {
       }
     };
 
-    setup();
+    // Start drawing loop immediately
+    animationFrameId = requestAnimationFrame(drawResults);
 
     return () => {
-      isActive = false;
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      if (videoRef.current && videoRef.current.srcObject) {
-         const stream = videoRef.current.srcObject as MediaStream;
-         stream.getTracks().forEach(t => t.stop());
-      }
     };
-  }, []);
+  }, [videoRef, landmarksRef]);
 
-  let displayLabel = isReady ? 'SYSTEM READY' : 'BOOTING AI...';
-  if (error) displayLabel = error;
-  else if (isReady) {
-    if (activeGesture === 'PALM') displayLabel = '[ PALM ] SLOW_MO';
-    else if (activeGesture === 'FIST') displayLabel = '[ FIST ] PAUSED';
-    else if (activeGesture === 'SWIPE_UP') displayLabel = '[ SWIPE ] OVERRIDE';
-    else if (activeGesture === 'PEACE') displayLabel = '[ PEACE ] BURST';
-    else if (activeGesture === 'PINCH') displayLabel = '[ PINCH ] GLITCH';
-    else displayLabel = '[ SYSTEM READY ]';
-  }
+  let displayLabel = '[ SYSTEM READY ]';
+  if (activeGesture === 'PALM') displayLabel = '[ PALM ] SLOW_MO';
+  else if (activeGesture === 'FIST') displayLabel = '[ FIST ] PAUSED';
+  else if (activeGesture === 'SWIPE_UP') displayLabel = '[ SWIPE ] OVERRIDE';
+  else if (activeGesture === 'PEACE') displayLabel = '[ PEACE ] BURST';
+  else if (activeGesture === 'PINCH') displayLabel = '[ PINCH ] GLITCH';
 
-  const labelClass = `gesture-label ${error ? 'error' : ''} ${activeGesture !== 'NONE' ? 'active-gesture' : ''}`;
+  const labelClass = `gesture-label ${activeGesture !== 'NONE' ? 'active-gesture' : ''}`;
 
   return (
-    <div className="gesture-panel-wrapper">
-      <video ref={videoRef} style={{ display: 'none' }} playsInline />
-      <div className="canvas-container">
+    <div className={`gesture-panel-wrapper ${isMinimized ? 'minimized' : ''}`}>
+      <button 
+        className="minimize-btn" 
+        onClick={() => setIsMinimized(!isMinimized)} 
+        title={isMinimized ? "Restore AI HUD" : "Minimize AI HUD"}
+      >
+        {isMinimized ? '+' : '−'}
+      </button>
+      
+      <div className="canvas-container" style={{ display: isMinimized ? 'none' : 'block' }}>
         <canvas 
           ref={canvasRef} 
           width={260} 
@@ -183,9 +139,28 @@ export const GesturePanel = () => {
           style={{ width: '100%', height: '100%' }} 
         />
       </div>
-      <div className={labelClass}>
-        {displayLabel}
-      </div>
+      
+      {!isMinimized && (
+        <>
+          <div className={labelClass}>
+            {displayLabel}
+          </div>
+          <div className="gesture-legend">
+            <div className="legend-title">AVAILABLE COMMANDS:</div>
+            <div className="legend-item"><span className="legend-icon">✋</span> PALM: SLOW-MO</div>
+            <div className="legend-item"><span className="legend-icon">✊</span> FIST: PAUSE</div>
+            <div className="legend-item"><span className="legend-icon">✌️</span> PEACE: BURST</div>
+            <div className="legend-item"><span className="legend-icon">🤏</span> PINCH: GLITCH</div>
+            <div className="legend-item"><span className="legend-icon">👆</span> SWIPE UP: OVERRIDE</div>
+          </div>
+        </>
+      )}
+      
+      {isMinimized && (
+        <div className="restore-text" onClick={() => setIsMinimized(false)}>
+          AI HUD
+        </div>
+      )}
     </div>
   );
 };
