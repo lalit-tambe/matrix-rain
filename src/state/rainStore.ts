@@ -1,5 +1,6 @@
 export interface RainState {
   speedMultiplier: number;
+  targetSpeedMultiplier: number;
   burstTrigger: boolean;
   colorGlitch: boolean;
   activeGesture: string;
@@ -7,6 +8,7 @@ export interface RainState {
 
 export const rainStore: RainState = {
   speedMultiplier: 1.0,
+  targetSpeedMultiplier: 1.0,
   burstTrigger: false,
   colorGlitch: false,
   activeGesture: 'NONE',

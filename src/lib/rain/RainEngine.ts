@@ -84,6 +84,9 @@ export class RainEngine {
   };
 
   private update = () => {
+    // Smooth speed transitions
+    rainStore.speedMultiplier += (rainStore.targetSpeedMultiplier - rainStore.speedMultiplier) * 0.1;
+
     if (rainStore.burstTrigger) {
       this.triggerBurst();
       rainStore.burstTrigger = false;

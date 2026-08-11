@@ -1,1 +1,1 @@
-export type GestureType = 'PALM' | 'FIST' | 'SWIPE_UP' | 'PEACE' | 'PINCH' | 'NONE';
+export type GestureType = 'NONE' | 'PALM' | 'FIST' | 'PEACE' | 'PINCH' | 'SWIPE_UP';
