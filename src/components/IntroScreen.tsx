@@ -4,7 +4,7 @@ import { HandLandmarker } from '@mediapipe/tasks-vision';
 import './IntroScreen.css';
 
 type IntroProps = {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   landmarksRef: React.MutableRefObject<Landmark[]>;
   isAiReady: boolean;
   aiError: string | null;

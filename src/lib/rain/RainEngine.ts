@@ -133,7 +133,6 @@ export class RainEngine {
     this.ctx.textBaseline = 'top';
 
     let greenColor = '#00FF41';
-    let headColor = '#E0FFE0';
     let r = 0, g = 255, b = 65;
 
     if (this.glitchTimer > 0) {

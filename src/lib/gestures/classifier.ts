@@ -35,13 +35,7 @@ export class GestureClassifier {
     const middleExt = isExtended(12, 10);
     const ringExt = isExtended(16, 14);
     const pinkyExt = isExtended(20, 18);
-
-    // Thumb is extended if its tip is further from the pinky base than its IP joint
-    const thumbExt = distance(landmarks[4], landmarks[17]) > distance(landmarks[3], landmarks[17]) + (handSize * 0.05);
-
-    // Pinch: Thumb tip and index tip are close
-    const pinchDist = distance(landmarks[4], landmarks[8]);
-    const isPinch = pinchDist < (handSize * 0.4); 
+    const isPinch = distance(landmarks[4], landmarks[8]) < (handSize * 0.4); 
 
     // Classification Priority
 

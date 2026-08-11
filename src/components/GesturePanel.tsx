@@ -8,7 +8,7 @@ import type { Landmark } from '../lib/gestures/classifier';
 import './GesturePanel.css';
 
 type GesturePanelProps = {
-  videoRef: React.RefObject<HTMLVideoElement>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   landmarksRef: React.MutableRefObject<Landmark[]>;
 };
 
