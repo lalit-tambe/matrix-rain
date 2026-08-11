@@ -74,8 +74,8 @@ export const GesturePanel = () => {
       
       const startTimeMs = performance.now();
       
-      // Throttle AI detection to ~10 times a second to prevent main thread blocking
-      if (startTimeMs - lastDetectTime > 100) {
+      // Throttle AI detection to ~15 times a second (66ms) to prevent main thread blocking while keeping response fast
+      if (startTimeMs - lastDetectTime > 66) {
         lastDetectTime = startTimeMs;
         const results = landmarker.detectForVideo(video, startTimeMs);
         drawResults(results);

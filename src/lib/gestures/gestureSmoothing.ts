@@ -2,7 +2,7 @@ import type { GestureType } from '../../types';
 
 export class GestureSmoother {
   private history: GestureType[] = [];
-  private historySize = 15; // Increased buffer for stability 
+  private historySize = 5; // Reduced buffer for faster response since AI FPS is throttled 
 
   public smooth(currentGesture: GestureType): GestureType {
     this.history.push(currentGesture);
