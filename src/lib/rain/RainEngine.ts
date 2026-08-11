@@ -84,8 +84,8 @@ export class RainEngine {
   };
 
   private update = () => {
-    // Smooth speed transitions
-    rainStore.speedMultiplier += (rainStore.targetSpeedMultiplier - rainStore.speedMultiplier) * 0.1;
+    // Smooth speed transitions (slower ease for more cinematic bullet-time entry)
+    rainStore.speedMultiplier += (rainStore.targetSpeedMultiplier - rainStore.speedMultiplier) * 0.05;
 
     if (rainStore.burstTrigger) {
       this.triggerBurst();
@@ -106,8 +106,8 @@ export class RainEngine {
 
       stream.rowPos += stream.speed * rainStore.speedMultiplier;
 
-      // Randomly mutate characters
-      if (Math.random() < 0.6) {
+      // Randomly mutate characters (scales with time so bullet-time looks authentic)
+      if (Math.random() < 0.6 * Math.max(0.1, rainStore.speedMultiplier)) {
         const randIdx = Math.floor(Math.random() * stream.chars.length);
         stream.chars[randIdx] = getRandomGlyph();
       }
@@ -156,10 +156,13 @@ export class RainEngine {
         if (yPos < -stream.fontSize || yPos > this.canvas.height) continue;
 
         const isHead = i === 0;
+        const isNearHead = i > 0 && i < 4;
         const alpha = Math.max(0, 1 - (i / stream.length));
 
         if (isHead) {
-          this.ctx.fillStyle = headColor;
+          this.ctx.fillStyle = '#FFFFFF'; // Pure white core
+        } else if (isNearHead) {
+          this.ctx.fillStyle = '#A0FFA0'; // Bright inner corona
         } else {
           this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
         }
